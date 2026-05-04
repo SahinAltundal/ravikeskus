@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ravikeskus Keskinen - Tallikartta & Hallinta</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo-area">
+            <div class="logo-icon">🗺️</div>
+            <div class="logo-text">
+                <h1>Ravikeskus Keskinen</h1>
+                <p>TALLIKARTTA & HALLINTA</p>
+            </div>
+        </div>
+        <div class="legend">
+            <span class="legend-item"><span class="dot free"></span> Vapaa</span>
+            <span class="legend-item"><span class="dot reserved"></span> Varattu</span>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <section class="left-panel">
+            <div class="panel-header">
+                <h2>🗺️ Aluekartta</h2>
+            </div>
+            <div class="buildings-grid" id="buildings-grid">
+                <!-- Buildings will be injected here -->
+            </div>
+            
+            <div class="other-areas">
+                <h3>MUUT ALUEET</h3>
+                <div class="badges">
+                    <span class="badge">☕ Tallikahvio</span>
+                    <span class="badge">➕ Ensiapu</span>
+                    <span class="badge">🚻 WC</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="right-panel" id="right-panel">
+            <div class="empty-state" id="empty-state">
+                Valitse rakennus vasemmalta nähdäksesi karsinat.
+            </div>
+            <div class="building-view hidden" id="building-view">
+                <div class="building-view-header">
+                    <h2 id="current-building-title">Rakennus A</h2>
+                    <button id="close-building-view" class="icon-btn">✕</button>
+                </div>
+                <div class="boxes-grid" id="boxes-grid">
+                    <!-- Boxes will be injected here -->
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="footer">
+        <button id="clear-all-btn" class="btn-outline">🗑️ Tyhjennä kaikki varaukset</button>
+    </footer>
+
+    <footer class="footer">
+    <a href="admin.html" style="color: #cbd5e1; text-decoration: none; font-size: 12px;">Admin Paneeli</a>
+</footer>
+
+    <!-- Modal -->
+    <div class="modal-overlay hidden" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Varaa karsina</h3>
+                <button id="close-modal" class="icon-btn">✕</button>
+            </div>
+            <form id="reservation-form">
+                <input type="hidden" id="box-id">
+                <div class="form-group">
+                    <label for="horse-name">Hevosen Nimi</label>
+                    <input type="text" id="horse-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="trainer">Valmentaja</label>
+                    <input type="text" id="trainer" required>
+                </div>
+                <div class="form-group">
+                    <label for="arrival-time">Saapumisaika</label>
+                    <input type="datetime-local" id="arrival-time" required>
+                </div>
+                <div class="form-group">
+                    <label for="departure-time">Lähtöaika</label>
+                    <input type="datetime-local" id="departure-time" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="delete-reservation-btn" class="btn-danger hidden">Peruuta varaus</button>
+                    <div class="right-actions">
+                        <button type="button" id="cancel-modal-btn" class="btn-secondary">Peruuta</button>
+                        <button type="submit" id="save-reservation-btn" class="btn-primary">Tallenna</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

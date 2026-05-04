@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>Ylläpitopaneeli - Ravikeskus</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { padding: 30px; background: #f1f5f9; font-family: sans-serif; }
+        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8fafc; }
+        .btn-ok { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .btn-del { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        #admin-content { display: none; }
+    </style>
+</head>
+<body>
+    <div id="admin-content" class="container">
+        <h1>📋 Varausten hallinta</h1>
+        <table id="admin-table">
+            <thead>
+                <tr>
+                    <th>Nro</th>
+                    <th>Hevonen</th>
+                    <th>Valmentaja</th>
+                    <th>Saapuu</th>
+                    <th>Lähtee</th>
+                    <th>Tila</th>
+                    <th>Toiminnot</th>
+                </tr>
+            </thead>
+            <tbody id="admin-tbody"></tbody>
+        </table>
+        <br><a href="index.html">⬅ Takaisin karttaan</a>
+    </div>
+
+    <script>
+        const SALASANA = "hevoset2024"; // Şifren bu
+
+        async function initAdmin() {
+            const pw = prompt("Kirjaudu sisään:");
+            if (pw !== SALASANA) { alert("Väärin!"); window.location.href="index.html"; return; }
+            document.getElementById('admin-content').style.display = 'block';
+            loadData();
+        }
+
+        async function loadData() {
+            const res = await fetch('http://localhost:3000/api/reservations');
+            const data = await res.json();
+            const tbody = document.getElementById('admin-tbody');
+            tbody.innerHTML = '';
+
+            Object.keys(data).sort((a,b) => a-b).forEach(id => {
+                const v = data[id];
+                const color = v.status === 'Hyväksytty' ? 'green' : 'orange';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${id}</td>
+                        <td>${v.horse_name}</td>
+                        <td>${v.trainer}</td>
+                        <td>${new Date(v.arrival_time).toLocaleString('fi-FI')}</td>
+                        <td>${new Date(v.departure_time).toLocaleString('fi-FI')}</td>
+                        <td style="color:${color}; font-weight:bold">${v.status}</td>
+                        <td>
+                            <button class="btn-ok" onclick="updateStatus(${id}, 'Hyväksytty')">Hyväksy</button>
+                            <button class="btn-del" onclick="deleteRes(${id})">Poista</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function updateStatus(id, status) {
+            await fetch(`http://localhost:3000/api/reservations/${id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({status})
+            });
+            loadData();
+        }
+
+        async function deleteRes(id) {
+            if(confirm('Poistetaanko?')) {
+                await fetch(`http://localhost:3000/api/reservations/${id}`, {method:'DELETE'});
+                loadData();
+            }
+        }
+        initAdmin();
+    </script>
+</body>
+</html>

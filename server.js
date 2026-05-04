@@ -10,10 +10,10 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Palvelee staattisia tiedostoja (HTML, CSS, JS) Renderissä
-app.use(express.static(path.join(__dirname)));
+// Palvelee staattisia tiedostoja (HTML, CSS, JS) suoraan juurikansiosta
+app.use(express.static(__dirname));
 
-// Aiven MySQL -tietokantayhteys tiedot
+// Aiven MySQL -tietokantayhteys
 const db = mysql.createConnection({
     host: 'mysql-e86bf43-ravit.h.aivencloud.com',
     port: 20106,
@@ -34,7 +34,9 @@ db.connect(err => {
     console.log('✅ Yhteys Aiven MySQL -tietokantaan muodostettu!');
 });
 
-// API: Hae kaikki varaukset tietokannasta
+// --- API-REITIT ---
+
+// Hae kaikki varaukset
 app.get('/api/reservations', (req, res) => {
     db.query('SELECT * FROM reservations', (err, results) => {
         if (err) return res.status(500).send(err);
@@ -46,7 +48,7 @@ app.get('/api/reservations', (req, res) => {
     });
 });
 
-// API: Uusi varaus tai olemassa olevan päivitys
+// Uusi varaus tai päivitys
 app.post('/api/reservations', (req, res) => {
     const { box_id, horse_name, trainer, arrival_time, departure_time } = req.body;
     const sql = `INSERT INTO reservations (box_id, horse_name, trainer, arrival_time, departure_time, status) 
@@ -60,16 +62,7 @@ app.post('/api/reservations', (req, res) => {
     });
 });
 
-// API: Varauksen tilan päivitys (esim. hyväksyntä ylläpitäjältä)
-app.patch('/api/reservations/:id', (req, res) => {
-    const { status } = req.body;
-    db.query('UPDATE reservations SET status = ? WHERE box_id = ?', [status, req.params.id], (err) => {
-        if (err) return res.status(500).send(err);
-        res.json({ success: true });
-    });
-});
-
-// API: Varauksen poistaminen
+// Varauksen poistaminen
 app.delete('/api/reservations/:id', (req, res) => {
     db.query('DELETE FROM reservations WHERE box_id = ?', [req.params.id], (err) => {
         if (err) return res.status(500).send(err);
@@ -77,13 +70,15 @@ app.delete('/api/reservations/:id', (req, res) => {
     });
 });
 
-// Reititys: Ohjaa kaikki muut pyynnöt pääsivulle (index.html)
-app.get('*', (req, res) => {
+// --- REITYS ---
+
+// Tarjoile index.html pääsivuna (Status 1 virheen korjaus)
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Renderin dynaaminen portti tai paikallinen 3000 testiä varten
+// Renderin dynaaminen portti
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Palvelin käynnissä portissa ${PORT}`);
+    console.log(`🚀 Palvelin valmiina portissa ${PORT}`);
 });

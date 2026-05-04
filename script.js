@@ -1,6 +1,7 @@
-const API_URL = 'http://localhost:3000/api/reservations';
+// HUOM! Tämä on linkki Render-palvelimeesi
+const API_URL = 'https://ravikeskus.onrender.com/api/reservations';
 
-// Bina tanımlamaları - Bunlar olmazsa ekran boş görünür
+// Rakennusmääritykset - Nämä määrittävät kartan rakenteen
 const buildings = [
     { id: 'A', name: 'Rakennus A', start: 1, end: 18 },
     { id: 'B', name: 'Rakennus B', start: 19, end: 36 },
@@ -13,7 +14,7 @@ const buildings = [
 let reservations = {};
 let currentBuildingId = null;
 
-// DOM Elemanları
+// DOM-elementit
 const buildingsGrid = document.getElementById('buildings-grid');
 const emptyState = document.getElementById('empty-state');
 const buildingView = document.getElementById('building-view');
@@ -23,7 +24,7 @@ const closeBuildingViewBtn = document.getElementById('close-building-view');
 const modal = document.getElementById('modal');
 const reservationForm = document.getElementById('reservation-form');
 
-// Uygulamayı Başlat
+// Alusta sovellus ja hae tiedot palvelimelta
 async function init() {
     try {
         const res = await fetch(API_URL);
@@ -31,13 +32,13 @@ async function init() {
         renderBuildings();
         setupEventListeners();
     } catch (error) {
-        console.error("Hata:", error);
-        // Sunucu kapalı olsa bile binaları gösterelim
+        console.error("Virhe ladattaessa tietoja:", error);
+        // Näytetään rakennukset vaikka palvelin olisi alhaalla
         renderBuildings();
     }
 }
 
-// Sol taraftaki binaları çiz
+// Piirrä vasemman puolen rakennuskortit
 function renderBuildings() {
     if (!buildingsGrid) return;
     buildingsGrid.innerHTML = '';
@@ -71,7 +72,7 @@ function renderBuildings() {
     });
 }
 
-// Bina seçilince sağ tarafı aç
+// Valitse rakennus ja näytä karsinat
 function selectBuilding(id) {
     currentBuildingId = id;
     renderBuildings();
@@ -85,7 +86,7 @@ function selectBuilding(id) {
     renderBoxes(building);
 }
 
-// Sağ taraftaki karsinaları çiz
+// Piirrä oikean puolen karsinat
 function renderBoxes(building) {
     boxesGrid.innerHTML = '';
     for (let i = building.start; i <= building.end; i++) {
@@ -95,15 +96,15 @@ function renderBoxes(building) {
         
         if (r) {
             if (r.status === 'Hyväksytty') {
-                box.className = 'box reserved'; // Onaylı - Kırmızı
+                box.className = 'box reserved'; // Hyväksytty - Punainen
             } else {
                 box.className = 'box';
-                box.style.background = '#fbbf24'; // Beklemede - Sarı
+                box.style.background = '#fbbf24'; // Odottaa - Keltainen
                 box.style.color = 'white';
                 box.style.borderColor = '#d97706';
             }
         } else {
-            box.className = 'box'; // Boş - Yeşil (CSS'den gelir)
+            box.className = 'box'; // Vapaa - Vihreä
         }
 
         box.onclick = () => openModal(i);
@@ -111,7 +112,7 @@ function renderBoxes(building) {
     }
 }
 
-// Modal açma (Eski çalışan halini korudum)
+// Avaa varausikkuna
 function openModal(boxNumber) {
     document.getElementById('box-id').value = boxNumber;
     const res = reservations[boxNumber];
@@ -132,7 +133,7 @@ function openModal(boxNumber) {
     modal.classList.remove('hidden');
 }
 
-// Sunucuya Kaydet
+// Tallenna varaus tietokantaan
 async function saveReservation(e) {
     e.preventDefault();
     const data = {
@@ -149,13 +150,13 @@ async function saveReservation(e) {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
-        location.reload(); // Her şey bitsin ve güncellensin
+        location.reload(); // Päivitä sivu tallennuksen jälkeen
     } catch (err) {
-        alert("Kaydedilemedi!");
+        alert("Tallennus epäonnistui!");
     }
 }
 
-// Sunucudan Sil
+// Poista varaus tietokannasta
 async function deleteReservation() {
     const boxId = document.getElementById('box-id').value;
     if(!confirm('Haluatko varmasti poistaa varauksen?')) return;
@@ -164,10 +165,11 @@ async function deleteReservation() {
         await fetch(`${API_URL}/${boxId}`, { method: 'DELETE' });
         location.reload();
     } catch (err) {
-        alert("Silinemedi!");
+        alert("Poisto epäonnistui!");
     }
 }
 
+// Tapahtumankuuntelijat
 function setupEventListeners() {
     closeBuildingViewBtn.onclick = () => {
         currentBuildingId = null;
@@ -181,5 +183,5 @@ function setupEventListeners() {
     document.getElementById('delete-reservation-btn').onclick = deleteReservation;
 }
 
-// Motoru çalıştır
+// Käynnistä sovellus
 init();

@@ -7,16 +7,24 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+// AIVEN BULUT VERİTABANI BAĞLANTISI
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '', 
-    database: 'ravikeskus'
+    host: 'mysql-e86bf43-ravit.h.aivencloud.com',
+    port: 20106,
+    user: 'avnadmin',
+    password: 'AVNS_HYwsynmmBFxYYpqGfjq',
+    database: 'defaultdb',
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 db.connect(err => {
-    if (err) throw err;
-    console.log('✅ MySQL Bağlandı!');
+    if (err) {
+        console.error('❌ Veritabanı Hatası:', err.message);
+        return;
+    }
+    console.log('✅ Aiven MySQL Bağlantısı Başarılı!');
 });
 
 // Tüm rezervasyonları getir
@@ -29,7 +37,7 @@ app.get('/api/reservations', (req, res) => {
     });
 });
 
-// Yeni Rezervasyon (Varsayılan durum: Odottaa hyväksyntää)
+// Yeni Rezervasyon
 app.post('/api/reservations', (req, res) => {
     const { box_id, horse_name, trainer, arrival_time, departure_time } = req.body;
     const sql = `INSERT INTO reservations (box_id, horse_name, trainer, arrival_time, departure_time, status) 
@@ -60,4 +68,8 @@ app.delete('/api/reservations/:id', (req, res) => {
     });
 });
 
-app.listen(3000, () => console.log('🚀 Sunucu http://localhost:3000 portunda hazır!'));
+// RENDER İÇİN KRİTİK PORT AYARI
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🚀 Sunucu ${PORT} portunda hazır!`);
+});
